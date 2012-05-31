@@ -14,6 +14,7 @@ development:
   username: azdaroth
   host: localhost
   pool: 5
+  password: qpa
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".
@@ -29,6 +30,7 @@ test:
   username: azdaroth
   host: localhost
   pool: 5
+  password: qpa
 
 production:
   # adapter: sqlite3
@@ -40,3 +42,4 @@ production:
   database: sample_app_production
   username: azdaroth
   pool: 5
+  password: qpa
