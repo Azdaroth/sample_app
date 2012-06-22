@@ -26,9 +26,17 @@ describe User do
   it { should respond_to(:password) }
   it { should respond_to(:password_confirmation) }
   it { should respond_to(:remember_token) }
-  it { should respond_to (:authenticate) }
+  it { should respond_to(:admin) }
+  it { should respond_to(:authenticate) }
 
   it { should be_valid }
+  it { should_not be_admin }
+
+  describe "with admin attribute set to 'true'" do
+    before { @user.toggle!(:admin) }
+
+    it { should be_admin }
+  end
 
   describe "when name is not present" do
   	before { @user.name = " "}
@@ -49,20 +57,14 @@ describe User do
   	it "should be invalid" do
   		addresses = %w[user@foo,com user_at_foo.org example.user@foo.
                      foo@bar_baz.com foo@bar+baz.com]
-      addresses.each do |invalid_address|
-      	@user.email = invalid_address
-      	@user.should_not be_valid
-      end
+      validate_email(@user, addresses, false)
   	end
   end
 
   describe "when email format is valid" do
   	it "should be valid" do
   		addresses = %w[user@foo.COM A_US-ER@f.b.org frst.lst@foo.jp a+b@baz.cn]
-  		addresses.each do |valid_address|
-  			@user.email = valid_address
-  			@user.should be_valid
-  		end
+      validate_email(@user ,addresses, true)
   	end
   end
 
