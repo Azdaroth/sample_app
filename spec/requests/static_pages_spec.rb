@@ -18,18 +18,78 @@ describe "Static pages" do
 		it {should_not have_selector('title', text: '| Home')}
 
 		describe "for signed-in users" do
-			let(:user) { FactoryGirl.create(:user) }
-			before do
-				FactoryGirl.create(:micropost, user: user, content: "Lorem ipsum")
-				FactoryGirl.create(:micropost, user: user, content: "Dolor sit amet")
-				sign_in user
-				visit root_path
+			
+			describe "pagination" do
+				
+				let(:user) { FactoryGirl.create(:user) }
+				before(:all) { 50.times { FactoryGirl.create(:micropost) } }
+				after(:all) { Micropost.delete_all; User.delete_all} 
+
+				before do
+					sign_in user
+					visit user_path(user)
+				end
+
+				it { Micropost.count.should == 50; page.should have_selector('body') }
+
+				it "should list each micropost" do
+					user.feed.paginate(page: 1).each do |item|
+						page.should have_selector("li##{item.id}", text: item.content)
+					end
+					#save_and_open_page
+				end
+			end
+			
+			describe "with more than one micropost" do
+				let(:user) { FactoryGirl.create(:user) }
+					before do
+						FactoryGirl.create(:micropost, user: user, content: "Lorem ipsum")
+						FactoryGirl.create(:micropost, user: user, content: "Dolor sit amet")
+						sign_in user
+						visit root_path
+					end
+
+				it "should render the user's feed" do
+					user.feed.each do |item|
+						page.should have_selector("li##{item.id}", text: item.content)
+					end
+				end
+
+				it "should pluralize for microposts" do
+					page.should have_selector("span", text: "#{user.microposts.count} microposts" )
+				end
 			end
 
-			it "should render the user's feed" do
-				user.feed.each do |item|
-					page.should have_selector("li##{item.id}", text: item.content)
+			describe "with less than one micropost" do
+				let(:user) { FactoryGirl.create(:user) }
+					before do
+						FactoryGirl.create(:micropost, user: user, content: "Lorem ipsum")
+						sign_in user
+						visit root_path
+					end
+				
+				it "should not be pluralized" do
+					page.should have_selector("span", text: "#{user.microposts.count} micropost")
 				end
+			end
+
+			describe "follower/following counts" do
+				let(:user) { FactoryGirl.create(:user) }
+				before do
+					FactoryGirl.create(:micropost, user: user, content: "Lorem ipsum")
+					FactoryGirl.create(:micropost, user: user, content: "Dolor sit amet")
+					sign_in user
+					visit root_path
+				end
+
+				let(:other_user) { FactoryGirl.create(:user) }
+				before do
+					other_user.follow!(user)
+					visit root_path
+				end
+
+				it { should have_link("0 following", href: following_user_path(user)) }
+				it { should have_link("1 followers", href: followers_user_path(user)) }
 			end
 		end
 	end

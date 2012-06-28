@@ -14,3 +14,24 @@
 //= require jquery_ujs
 //= require bootstrap
 //= require_tree .
+//= require_self
+
+$(document).ready(function() {
+	$('#micropost_content').each(function(){
+		
+		var length = $(this).val().length;
+
+		$('.counter').html( 140 - length + ' characters left');
+
+		$(this).keyup(function(){
+
+			var new_length = $(this).val().length;
+			$('.counter').html( 140 - new_length + ' characters left')
+
+		});
+	});
+});
+
+
+
+

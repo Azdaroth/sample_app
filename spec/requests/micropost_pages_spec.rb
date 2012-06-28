@@ -5,6 +5,7 @@ describe "MicropostPages" do
 	subject { page }
 
 	let(:user) { FactoryGirl.create(:user) }
+	after(:all) { User.delete_all }
 	before { sign_in user }
 
 	describe "micropost creation" do
@@ -32,6 +33,7 @@ describe "MicropostPages" do
 	end
 
 	describe "micropost destruction" do
+
 		before { FactoryGirl.create(:micropost, user: user) }
 
 		describe "as correct user" do
@@ -39,6 +41,19 @@ describe "MicropostPages" do
 
 			it "should delete a micropost" do
 				expect { click_link "delete" }.should change(Micropost, :count).by(-1)
+			end
+		end
+
+		describe "as an incorrect user" do
+			
+			let(:other_user) { FactoryGirl.create(:user) }
+			before do
+				sign_in other_user
+				visit user_path(user) 
+			end 
+
+			it "should not display delete link for other user" do
+				page.should_not have_link("delete") 
 			end
 		end
 	end
